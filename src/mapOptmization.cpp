@@ -367,6 +367,8 @@ public:
       // 删掉之前有可能保存过的地图
       int unused = system((std::string("exec rm -r ") + saveMapDirectory).c_str());
       unused = system((std::string("mkdir -p ") + saveMapDirectory).c_str());
+      unused = system((std::string("mkdir -p ") + saveMapDirectory + saveCornerMapDirectory).c_str());
+      unused = system((std::string("mkdir -p ") + saveMapDirectory + saveSurfMapDirectory).c_str());
       // save key frame transformations
       // 首先保存关键帧轨迹
       pcl::io::savePCDFileBinary(saveMapDirectory + "/trajectory.pcd", *cloudKeyPoses3D);
@@ -378,11 +380,31 @@ public:
       pcl::PointCloud<PointType>::Ptr globalSurfCloudDS(new pcl::PointCloud<PointType>());
       pcl::PointCloud<PointType>::Ptr globalMapCloud(new pcl::PointCloud<PointType>());
       // 遍历所有关键帧，将点云全部转移到世界坐标系下去
+      pcl::PointCloud<PointType>::Ptr temp;
+      std::stringstream ss, suffix;
       for (int i = 0; i < (int)cloudKeyPoses3D->size(); i++) {
-          *globalCornerCloud += *transformPointCloud(cornerCloudKeyFrames[i],  &cloudKeyPoses6D->points[i]);
-          *globalSurfCloud   += *transformPointCloud(surfCloudKeyFrames[i],    &cloudKeyPoses6D->points[i]);
+          suffix.clear();
+          suffix.str("");
+          suffix << std::setfill('0') << std::setw(10) << i << ".pcd";
+          // corner
+          temp = transformPointCloud(cornerCloudKeyFrames[i],  &cloudKeyPoses6D->points[i]);
+          ss.clear();
+          ss.str("");
+          ss << saveMapDirectory << saveCornerMapDirectory << suffix.str();
+          cout << "Save destination Corner Map: " << ss.str() << endl;
+          pcl::io::savePCDFileBinary(ss.str(), *temp);
+          *globalCornerCloud += *temp;
+
+          // surf
+          temp = transformPointCloud(surfCloudKeyFrames[i],    &cloudKeyPoses6D->points[i]);
+          ss.clear();
+          ss.str("");
+          ss << saveMapDirectory << saveSurfMapDirectory << suffix.str();
+          cout << "Save destination Surf Map: " << ss.str() << endl;
+          pcl::io::savePCDFileBinary(ss.str(), *temp);
+          *globalSurfCloud   += *temp;
           // 类似进度条的功能
-          cout << "\r" << std::flush << "Processing feature cloud " << i << " of " << cloudKeyPoses6D->size() << " ...";
+          cout << "\r" << std::flush << "Processing feature cloud " << i << " of " << cloudKeyPoses6D->size() << " ...\n";
       }
         // 如果没有指定分辨率，就是直接保存
       if(req.resolution != 0)
