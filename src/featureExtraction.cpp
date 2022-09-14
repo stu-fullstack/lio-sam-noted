@@ -1,5 +1,7 @@
 #include "utility.h"
-#include "lio_sam/cloud_info.h"
+#include "lio_sam_noted/cloud_info.h"
+
+namespace lio_sam = lio_sam_noted;
 
 struct smoothness_t{ 
     float value;
@@ -37,6 +39,10 @@ public:
     int *cloudNeighborPicked;
     int *cloudLabel;
 
+    unsigned int pcd_index;
+
+    string saveInputDirectory;
+
     FeatureExtraction()
     {
         subLaserCloudInfo = nh.subscribe<lio_sam::cloud_info>("lio_sam/deskew/cloud_info", 1, &FeatureExtraction::laserCloudInfoHandler, this, ros::TransportHints().tcpNoDelay());
@@ -61,6 +67,12 @@ public:
         cloudCurvature = new float[N_SCAN*Horizon_SCAN];
         cloudNeighborPicked = new int[N_SCAN*Horizon_SCAN];
         cloudLabel = new int[N_SCAN*Horizon_SCAN];
+
+        pcd_index = 0;
+        stringstream ss;
+        ss << std::getenv("HOME") << savePCDDirectory << saveInputPointCloudDirectory;
+        system((std::string("mkdir -p ") + ss.str()).c_str());
+        saveInputDirectory = ss.str();
     }
     // 订阅上一个结点的消息
     void laserCloudInfoHandler(const lio_sam::cloud_infoConstPtr& msgIn)
@@ -69,6 +81,12 @@ public:
         cloudHeader = msgIn->header; // new cloud header
         // 把提取出来的有效的点转成pcl的格式
         pcl::fromROSMsg(msgIn->cloud_deskewed, *extractedCloud); // new cloud for extraction
+        
+        std::stringstream suffix;
+        suffix << std::setfill('0') << std::setw(10) << pcd_index++ << ".pcd";
+        
+        cout << "Save destination Input PointCloud: " << (saveInputDirectory + suffix.str()) << endl;
+        pcl::io::savePCDFileBinary(saveInputDirectory + suffix.str(), *extractedCloud);
 
         calculateSmoothness();
 

@@ -1,6 +1,6 @@
 #include "utility.h"
-#include "lio_sam/cloud_info.h"
-#include "lio_sam/save_map.h"
+#include "lio_sam_noted/cloud_info.h"
+#include "lio_sam_noted/save_map.h"
 
 #include <gtsam/geometry/Rot3.h>
 #include <gtsam/geometry/Pose3.h>
@@ -18,6 +18,7 @@
 #include <gtsam/nonlinear/ISAM2.h>
 
 using namespace gtsam;
+namespace lio_sam = lio_sam_noted;
 
 using symbol_shorthand::X; // Pose3 (x,y,z,r,p,y)
 using symbol_shorthand::V; // Vel   (xdot,ydot,zdot)
@@ -365,8 +366,7 @@ public:
       cout << "Save destination: " << saveMapDirectory << endl;
       // create directory and remove old files;
       // 删掉之前有可能保存过的地图
-      int unused = system((std::string("exec rm -r ") + saveMapDirectory).c_str());
-      unused = system((std::string("mkdir -p ") + saveMapDirectory).c_str());
+      int unused = system((std::string("mkdir -p ") + saveMapDirectory).c_str());
       unused = system((std::string("mkdir -p ") + saveMapDirectory + saveCornerMapDirectory).c_str());
       unused = system((std::string("mkdir -p ") + saveMapDirectory + saveSurfMapDirectory).c_str());
       // save key frame transformations
@@ -526,16 +526,6 @@ public:
         // 最终发布出去
         publishCloud(&pubLaserCloudSurround, globalMapKeyFramesDS, timeLaserInfoStamp, odometryFrame);
     }
-
-
-
-
-
-
-
-
-
-
 
     // 回环检测线程
     void loopClosureThread()
@@ -857,13 +847,6 @@ public:
         pubLoopConstraintEdge.publish(markerArray);
     }
 
-
-
-
-
-
-
-    
 
 
     // 作为基于优化方式的点云匹配，初始值是非常重要的，一个好的初始值会帮助优化问题快速收敛且避免局部最优解的情况

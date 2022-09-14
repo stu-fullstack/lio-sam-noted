@@ -14,7 +14,7 @@
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 
-#include <opencv/cv.h>
+#include <opencv2/opencv.hpp>
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -90,6 +90,7 @@ public:
     string savePCDDirectory;
     string saveCornerMapDirectory;
     string saveSurfMapDirectory;
+    string saveInputPointCloudDirectory;
 
     // Lidar Sensor Configuration
     SensorType sensor;
@@ -175,7 +176,7 @@ public:
         nh.param<std::string>("lio_sam/savePCDDirectory", savePCDDirectory, "/Downloads/LOAM/");
         nh.param<std::string>("lio_sam/saveCornerMapDirectory", saveCornerMapDirectory, "corner/");
         nh.param<std::string>("lio_sam/saveSurfMapDirectory", saveSurfMapDirectory, "surf/");
-        
+        nh.param<std::string>("lio_sam/saveInputPointCloudDirectory", saveInputPointCloudDirectory, "input_data/");
 
         std::string sensorStr;
         nh.param<std::string>("lio_sam/sensor", sensorStr, "");
